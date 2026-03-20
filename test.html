@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Solver - Test Suite</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Sudoku Solver Test Suite</h1>
+    
+    <div class="test-container">
+        <h2>Test Controls</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="runBasicTests()">Basic Tests</button>
+        <button onclick="runPerformanceTests()">Performance Tests</button>
+        <button onclick="runEdgeCaseTests()">Edge Cases</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script src="script.js"></script>
+    <script>
+        let solver;
+        let testResults = [];
+
+        function initializeSolver() {
+            solver = new SudokuSolver();
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            testResults = [];
+        }
+
+        function addResult(testName, passed, message, details = '') {
+            const result = {
+                name: testName,
+                passed: passed,
+                message: message,
+                details: details
+            };
+            testResults.push(result);
+            displayResult(result);
+        }
+
+        function displayResult(result) {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${result.passed ? 'pass' : 'fail'}`;
+            
+            let content = `<strong>${result.name}:</strong> ${result.message}`;
+            if (result.details) {
+                content += `<pre>${result.details}</pre>`;
+            }
+            
+            resultDiv.innerHTML = content;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        function addInfo(message) {
+            const resultsDiv = document.getElementById('results');
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'test-result info';
+            infoDiv.innerHTML = `<strong>Info:</strong> ${message}`;
+            resultsDiv.appendChild(infoDiv);
+        }
+
+        // Test Helper Functions
+        function createTestGrid(puzzleString) {
+            const grid = Array(9).fill().map(() => Array(9).fill(0));
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    const char = puzzleString[row * 9 + col];
+                    grid[row][col] = char === '0' || char === '.' ? 0 : parseInt(char);
+                }
+            }
+            return grid;
+        }
+
+        function gridToString(grid) {
+            return grid.map(row => row.join('')).join('\n');
+        }
+
+        function isValidSudoku(grid) {
+            // Check rows
+            for (let row = 0; row < 9; row++) {
+                const seen = new Set();
+                for (let col = 0; col < 9; col++) {
+                    const val = grid[row][col];
+                    if (val !== 0) {
+                        if (seen.has(val)) return false;
+                        seen.add(val);
+                    }
+                }
+            }
+
+            // Check columns
+            for (let col = 0; col < 9; col++) {
+                const seen = new Set();
+                for (let row = 0; row < 9; row++) {
+                    const val = grid[row][col];
+                    if (val !== 0) {
+                        if (seen.has(val)) return false;
+                        seen.add(val);
+                    }
+                }
+            }
+
+            // Check 3x3 boxes
+            for (let boxRow = 0; boxRow < 3; boxRow++) {
+                for (let boxCol = 0; boxCol < 3; boxCol++) {
+                    const seen = new Set();
+                    for (let row = boxRow * 3; row < boxRow * 3 + 3; row++) {
+                        for (let col = boxCol * 3; col < boxCol * 3 + 3; col++) {
+                            const val = grid[row][col];
+                            if (val !== 0) {
+                                if (seen.has(val)) return false;
+                                seen.add(val);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        // Basic Tests
+        function runBasicTests() {
+            addInfo('Running Basic Tests...');
+
+            // Test 1: Empty Grid
+            try {
+                const emptyGrid = Array(9).fill().map(() => Array(9).fill(0));
+                solver.copyGrid(emptyGrid, solver.grid);
+                const result = solver.solveWithBacktracking();
+                addResult('Empty Grid Test', result !== false, 
+                    result !== false ? 'PASS - Empty grid can be solved' : 'FAIL - Empty grid solving failed');
+            } catch (error) {
+                addResult('Empty Grid Test', false, `FAIL - Error: ${error.message}`);
+            }
+
+            // Test 2: Valid Easy Puzzle
+            try {
+                const easyPuzzle = "530070000600195000098000060800060003400803001700020006060000280000419005000080079";
+                const testGrid = createTestGrid(easyPuzzle);
+                solver.copyGrid(testGrid, solver.grid);
+                const result = solver.solveWithBacktracking();
+                const isValid = result && isValidSudoku(solver.grid);
+                addResult('Easy Puzzle Test', isValid, 
+                    isValid ? 'PASS - Easy puzzle solved correctly' : 'FAIL - Easy puzzle solution invalid',
+                    isValid ? gridToString(solver.grid) : '');
+            } catch (error) {
+                addResult('Easy Puzzle Test', false, `FAIL - Error: ${error.message}`);
+            }
+
+            // Test 3: Invalid Input Detection
+            try {
+                const invalidPuzzle = "530070000600195000098000060800060003400803001700020006060000280000419005000080079";
+                const testGrid = createTestGrid(invalidPuzzle);
+                // Make it invalid by adding a duplicate
+                testGrid[0][0] = 5;
+                testGrid[0][1] = 5;
+                solver.copyGrid(testGrid, solver.grid);
+                const isValid = solver.validateGrid();
+                addResult('Invalid Input Detection', !isValid, 
+                    !isValid ? 'PASS - Invalid input detected' : 'FAIL - Invalid input not detected');
+            } catch (error) {
+                addResult('Invalid Input Detection', false, `FAIL - Error: ${error.message}`);
+            }
+
+            // Test 4: Already Solved Puzzle
+            try {
+                const solvedPuzzle = "534678912672195348198342567859761423426853791713924856961537284287419635345286179";
+                const testGrid = createTestGrid(solvedPuzzle);
+                solver.copyGrid(testGrid, solver.grid);
+                const result = solver.solveWithBacktracking();
+                const isValid = result && isValidSudoku(solver.grid);
+                addResult('Solved Puzzle Test', isValid, 
+                    isValid ? 'PASS - Already solved puzzle handled correctly' : 'FAIL - Solved puzzle handling failed');
+            } catch (error) {
+                addResult('Solved Puzzle Test', false, `FAIL - Error: ${error.message}`);
+            }
+        }
+
+        // Performance Tests
+        function runPerformanceTests() {
+            addInfo('Running Performance Tests...');
+
+            // Test 1: Solve Time Measurement
+            try {
+                const mediumPuzzle = "040001000000700050100000060002060400000000000004020900030000007008003000000600040";
+                const testGrid = createTestGrid(mediumPuzzle);
+                solver.copyGrid(testGrid, solver.grid);
+                
+                const startTime = performance.now();
+                const result = solver.solveWithBacktracking();
+                const endTime = performance.now();
+                const solveTime = endTime - startTime;
+                
+                const passed = result && solveTime < 1000; // Should solve in under 1 second
+                addResult('Performance Test', passed, 
+                    passed ? `PASS - Solved in ${solveTime.toFixed(2)}ms` : `FAIL - Too slow: ${solveTime.toFixed(2)}ms`);
+            } catch (error) {
+                addResult('Performance Test', false, `FAIL - Error: ${error.message}`);
+            }
+
+            // Test 2: Hard Puzzle Performance
+            try {
+                const hardPuzzle = "000000000000003085001020000000507000004000100090000000500000073002010000000040009";
+                const testGrid = createTestGrid(hardPuzzle);
+                solver.copyGrid(testGrid, solver.grid);
+                
+                const startTime = performance.now();
+                const result = solver.solveWithBacktracking();
+                const endTime = performance.now();
+                const solveTime = endTime - startTime;
+                
+                const passed = result && solveTime < 5000; // Should solve in under 5 seconds
+                addResult('Hard Puzzle Performance', passed, 
+                    passed ? `PASS - Hard puzzle solved in ${solveTime.toFixed(2)}ms` : `FAIL - Hard puzzle too slow: ${solveTime.toFixed(2)}ms`);
+            } catch (error) {
+                addResult('Hard Puzzle Performance', false, `FAIL - Error: ${error.message}`);
+            }
+        }
+
+        // Edge Case Tests
+        function runEdgeCaseTests() {
+            addInfo('Running Edge Case Tests...');
+
+            // Test 1: Single Cell Grid
+            try {
+                const singleCellPuzzle = "100000000000000000000000000000000000000000000000000000000000000000000000000000000";
+                const testGrid = createTestGrid(singleCellPuzzle);
+                solver.copyGrid(testGrid, solver.grid);
+                const result = solver.solveWithBacktracking();
+                const isValid = result && isValidSudoku(solver.grid);
+                addResult('Single Cell Test', isValid, 
+                    isValid ? 'PASS - Single cell grid solved' : 'FAIL - Single cell grid failed');
+            } catch (error) {
+                addResult('Single Cell Test', false, `FAIL - Error: ${error.message}`);
+            }
+
+            // Test 2: No Solution Puzzle
+            try {
+                const impossiblePuzzle = "111000000000000000000000000000000000000000000000000000000000000000000000000000000";
+                const testGrid = createTestGrid(impossiblePuzzle);
+                solver.copyGrid(testGrid, solver.grid);
+                const result = solver.solveWithBacktracking();
+                addResult('No Solution Test', result === false, 
+                    result === false ? 'PASS - Impossible puzzle correctly identified' : 'FAIL - Impossible puzzle not detected');
+            } catch (error) {
+                addResult('No Solution Test', false, `FAIL - Error: ${error.message}`);
+            }
+
+            // Test 3: Maximum Empty Cells
+            try {
+                const maxEmptyPuzzle = "000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+                const testGrid = createTestGrid(maxEmptyPuzzle);
+                solver.copyGrid(testGrid, solver.grid);
+                
+                const startTime = performance.now();
+                const result = solver.solveWithBacktracking();
+                const endTime = performance.now();
+                const solveTime = endTime - startTime;
+                
+                const passed = result && solveTime < 10000; // Should solve in under 10 seconds
+                addResult('Maximum Empty Cells', passed, 
+                    passed ? `PASS - Empty grid solved in ${solveTime.toFixed(2)}ms` : `FAIL - Empty grid too slow: ${solveTime.toFixed(2)}ms`);
+            } catch (error) {
+                addResult('Maximum Empty Cells', false, `FAIL - Error: ${error.message}`);
+            }
+
+            // Test 4: Import Format Validation
+            try {
+                const validImport = "530070000\n600195000\n098000060\n800060003\n400803001\n700020006\n060000280\n000419005\n000080079";
+                const lines = validImport.split('\n').filter(line => line.trim());
+                const validFormat = lines.length === 9 && lines.every(line => line.replace(/\s/g, '').length === 9);
+                addResult('Import Format Validation', validFormat, 
+                    validFormat ? 'PASS - Import format validation works' : 'FAIL - Import format validation failed');
+            } catch (error) {
+                addResult('Import Format Validation', false, `FAIL - Error: ${error.message}`);
+            }
+        }
+
+        function runAllTests() {
+            clearResults();
+            addInfo('Starting Complete Test Suite...');
+            runBasicTests();
+            runPerformanceTests();
+            runEdgeCaseTests();
+            
+            const passed = testResults.filter(r => r.passed).length;
+            const total = testResults.length;
+            addInfo(`Test Suite Complete: ${passed}/${total} tests passed (${((passed/total)*100).toFixed(1)}%)`);
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            initializeSolver();
+            addInfo('Test suite loaded. Click buttons to run tests.');
+        });
+    </script>
+</body>
+</html>

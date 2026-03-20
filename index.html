@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Solver - Professional Puzzle Solver</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-th"></i> Sudoku Solver</h1>
+            <p class="subtitle">Professional 9×9 Puzzle Solver with Backtracking Algorithm</p>
+            <div class="theme-toggle">
+                <button id="themeToggle" class="btn-icon">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <main>
+            <div class="solver-section">
+                <div class="controls">
+                    <div class="control-group">
+                        <button id="solveBtn" class="btn btn-primary">
+                            <i class="fas fa-play"></i> Solve
+                        </button>
+                        <button id="clearBtn" class="btn btn-secondary">
+                            <i class="fas fa-eraser"></i> Clear
+                        </button>
+                        <button id="resetBtn" class="btn btn-secondary">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="visualizeMode">
+                            <span class="checkmark"></span>
+                            Step-by-Step Visualization
+                        </label>
+                        <div class="speed-control">
+                            <label for="speedSlider">Animation Speed:</label>
+                            <input type="range" id="speedSlider" min="1" max="100" value="50">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <select id="difficultySelect" class="select">
+                            <option value="">Load Sample Puzzle</option>
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                            <option value="expert">Expert</option>
+                        </select>
+                        <button id="loadSampleBtn" class="btn btn-outline">
+                            <i class="fas fa-download"></i> Load
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Solve Time:</span>
+                        <span id="solveTime" class="stat-value">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Status:</span>
+                        <span id="status" class="stat-value">Ready</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Steps:</span>
+                        <span id="steps" class="stat-value">0</span>
+                    </div>
+                </div>
+
+                <div class="sudoku-grid-container">
+                    <div id="sudokuGrid" class="sudoku-grid"></div>
+                </div>
+
+                <div class="input-methods">
+                    <div class="input-method">
+                        <h3><i class="fas fa-keyboard"></i> Manual Input</h3>
+                        <p>Click on cells and enter numbers 1-9. Use 0 or . for empty cells.</p>
+                    </div>
+                    <div class="input-method">
+                        <h3><i class="fas fa-file-import"></i> Import Puzzle</h3>
+                        <textarea id="puzzleInput" placeholder="Paste puzzle here (9 lines, 9 numbers each, use 0 or . for empty cells)"></textarea>
+                        <button id="importBtn" class="btn btn-outline">
+                            <i class="fas fa-upload"></i> Import
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-card">
+                    <h3><i class="fas fa-info-circle"></i> How to Use</h3>
+                    <ol>
+                        <li>Enter your Sudoku puzzle manually or import from text</li>
+                        <li>Click "Solve" to find the solution</li>
+                        <li>Enable "Step-by-Step Visualization" to see the algorithm in action</li>
+                        <li>Try sample puzzles of different difficulties</li>
+                    </ol>
+                </div>
+
+                <div class="info-card">
+                    <h3><i class="fas fa-cogs"></i> Algorithm</h3>
+                    <p>This solver uses a <strong>backtracking algorithm</strong> that:</p>
+                    <ul>
+                        <li>Finds empty cells systematically</li>
+                        <li>Tries numbers 1-9 in each empty cell</li>
+                        <li>Validates against Sudoku rules</li>
+                        <li>Backtracks when stuck</li>
+                        <li>Guarantees solution if one exists</li>
+                    </ul>
+                </div>
+
+                <div class="info-card">
+                    <h3><i class="fas fa-tachometer-alt"></i> Performance</h3>
+                    <ul>
+                        <li>⚡ Solves most puzzles in &lt; 1 second</li>
+                        <li>✅ 100% accuracy for valid puzzles</li>
+                        <li>🧪 Handles invalid inputs gracefully</li>
+                        <li>📊 Real-time step counting</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Sudoku Solver | Built with Backtracking Algorithm</p>
+        </footer>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
